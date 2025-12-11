@@ -1,10 +1,11 @@
 import { Request, Response } from "express";
-import { loginService, registerService } from "../services/authService";
 
-export const login = async (req: Request, res: Response) => {
+import { login, register } from "../services/authService";
+
+export const loginController = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
-    const result = await loginService(email, password);
+    const result = await login(email, password);
     res.cookie("auth-token", result.token);
     res.json(result.user);
   } catch (err: any) {
@@ -12,10 +13,10 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-export const register = async (req: Request, res: Response) => {
+export const registerController = async (req: Request, res: Response) => {
   try {
     const { firstName, lastName, email, password } = req.body;
-    const user = await registerService(firstName, lastName, email, password);
+    const user = await register(firstName, lastName, email, password);
     res.json(user);
   } catch (err: any) {
     res.status(400).json({ error: err.message });

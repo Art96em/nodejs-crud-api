@@ -5,12 +5,12 @@ import { createUser, findUserByEmail } from "../repositories/authRepostirory";
 
 const JWT_SECRET: string | undefined = process.env.JWT_SECRET;
 
-export async function registerService(
+export const register = async (
   firstName: string,
   lastName: string,
   email: string,
   password: string
-) {
+) => {
   const existing = await findUserByEmail(email);
   if (existing) throw new Error("User already exists");
 
@@ -22,9 +22,9 @@ export async function registerService(
     id: user.id,
     email: user.email,
   };
-}
+};
 
-export async function loginService(email: string, password: string) {
+export const login = async (email: string, password: string) => {
   const user = await findUserByEmail(email);
   if (!user) throw new Error("Invalid credentials");
 
@@ -42,4 +42,4 @@ export async function loginService(email: string, password: string) {
       email: user.email,
     },
   };
-}
+};
