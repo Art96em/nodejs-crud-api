@@ -40,6 +40,19 @@ export const placeOrder = async (userId: number) => {
       price: products[index]!.price,
     }));
 
+    for (let i = 0; i < items.length; i++) {
+      const productId = items[i].product_id;
+      const productQuantity = items[i].quantity;
+
+      const product = await ProductRepository.getProductByIdTx(tx, productId);
+
+      if (!product) throw new Error("Product not found");
+      if (product.quantity < productQuantity)
+        throw new Error("Not enough stock");
+
+      await ProductRepository.decreaseStockTx(tx, productId, productQuantity);
+    }
+
     await OrderItemsRepository.addManyOrderItemsTx(
       tx,
       order.id,
@@ -66,4 +79,12 @@ export const updateOrderStatus = async (orderId: string, status: string) => {
   }
 
   return OrderRepository.updateOrderStatus(orderId, status);
+};
+
+export const getOrder = (orderId: string) => {
+  return OrderRepository.getOrderById(orderId);
+};
+
+export const getOrderItems = (orderId: string) => {
+  return OrderItemsRepository.getAllOrderItemsByOrderId(orderId);
 };

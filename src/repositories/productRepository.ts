@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "../../prisma";
 import { ProductUpdateType, ProductInputType } from "../types/ProductTypes";
 
@@ -28,6 +29,26 @@ export class ProductRepository {
   static async getProductById(productId: string) {
     return prisma.products.findUnique({
       where: { id: productId },
+    });
+  }
+
+  static async getProductByIdTx(
+    tx: Prisma.TransactionClient,
+    productId: string
+  ) {
+    return tx.products.findUnique({
+      where: { id: productId },
+    });
+  }
+
+  static async decreaseStockTx(
+    tx: Prisma.TransactionClient,
+    productId: string,
+    quantity: number
+  ) {
+    return tx.products.update({
+      where: { id: productId },
+      data: { quantity: { decrement: quantity } },
     });
   }
 }
