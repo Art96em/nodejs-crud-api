@@ -1,5 +1,5 @@
-import { prisma } from "../../prisma/prisma";
-import { ProductUpdateType, ProductInputType } from "../models/ProductTypes";
+import { prisma } from "../../prisma";
+import { ProductUpdateType, ProductInputType } from "../types/ProductTypes";
 
 export class ProductRepository {
   static async createProduct(data: ProductInputType) {

@@ -1,4 +1,4 @@
-import { ProductInputType } from "../models/ProductTypes";
+import { ProductInputType } from "../types/ProductTypes";
 import { ProductRepository } from "../repositories/productRepository";
 
 export const createProduct = (product: ProductInputType) => {
