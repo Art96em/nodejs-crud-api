@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "../../prisma";
 
 export class CartRepository {
@@ -15,6 +16,12 @@ export class CartRepository {
 
   static async clearCart(userId: number) {
     return prisma.cart_items.deleteMany({
+      where: { user_id: userId },
+    });
+  }
+
+  static async clearCartTx(tx: Prisma.TransactionClient, userId: number) {
+    return tx.cart_items.deleteMany({
       where: { user_id: userId },
     });
   }

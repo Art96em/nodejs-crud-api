@@ -12,10 +12,11 @@ export interface AuthenticatedRequest extends Request {
 }
 
 export function auth(req: AuthRequest, res: Response, next: NextFunction) {
-  const header = req.headers.authorization;
-  if (!header) return res.status(401).json({ message: "No token" });
+  const token = req.cookies["auth-token"];
 
-  const token = header.split(" ")[1];
+  if (!token) return res.status(401).json({ message: "No token" });
+
+  // const token = header.split(" ")[1];
 
   try {
     const payload = jwt.verify(

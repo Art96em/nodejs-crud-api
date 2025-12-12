@@ -1,5 +1,4 @@
 import { prisma } from "../../prisma";
-import { pool } from "../utils/db";
 
 export class UserRepository {
   static findUserByEmail = (email: string) => {
