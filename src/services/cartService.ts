@@ -34,7 +34,13 @@ export const addItem = async (
   return CartRepository.putItem(userId, productId, quantity);
 };
 
-export const deleteCartItem = (userId: number, itemId: string) => {
+export const deleteCartItem = async (userId: number, itemId: string) => {
+  const item = await CartRepository.getItemByItemId(userId, itemId);
+
+  if (!item) {
+    throw new CartItemNotFoundError(itemId);
+  }
+
   return CartRepository.removeItem(userId, itemId);
 };
 
