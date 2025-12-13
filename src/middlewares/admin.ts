@@ -1,6 +1,7 @@
 import { Response, NextFunction } from "express";
 
 import { AuthRequest } from "./auth";
+import { ForbiddenError, NotAuthenticatedError } from "../errors/AuthErrors";
 
 export const isAdmin = (
   req: AuthRequest,
@@ -8,11 +9,11 @@ export const isAdmin = (
   next: NextFunction
 ) => {
   if (!req.user) {
-    return res.status(401).json({ message: "Not authenticated" });
+    throw new NotAuthenticatedError();
   }
 
   if (req.user.role !== "admin") {
-    return res.status(403).json({ message: "Forbidden: admin only" });
+    throw new ForbiddenError("Admin role required");
   }
 
   next();

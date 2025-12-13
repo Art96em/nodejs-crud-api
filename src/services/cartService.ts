@@ -1,23 +1,24 @@
+import { CartItemNotFoundError } from "../errors/CartErrors";
+import {
+  NotEnoughStockError,
+  ProductNotFoundError,
+} from "../errors/ProductErrors";
 import { CartRepository } from "../repositories/cartRepository";
 import { ProductRepository } from "../repositories/productRepository";
+import { AddCartItemDto, UpdateCartItemDto } from "../validation/cartSchema";
 
 export const addItem = async (
   userId: number,
-  productId: string,
-  quantity: number
+  { productId, quantity }: AddCartItemDto
 ) => {
   const product = await ProductRepository.getProductById(productId);
 
   if (!product) {
-    throw new Error("Product not found");
-  }
-
-  if (quantity <= 0) {
-    throw new Error("Quantity must be greater than zero");
+    throw new ProductNotFoundError(productId);
   }
 
   if (product.quantity < quantity) {
-    throw new Error("Not enough product quantity in stock");
+    throw new NotEnoughStockError(productId);
   }
 
   const existing = await CartRepository.getItemByProductId(userId, productId);
@@ -48,28 +49,24 @@ export const getCartItems = (userId: number) => {
 export const updateCartItem = async (
   userId: number,
   itemId: string,
-  quantity: number
+  { quantity }: UpdateCartItemDto
 ) => {
   const item = await CartRepository.getItemByItemId(userId, itemId);
 
   if (!item) {
-    throw new Error("Item not found");
+    throw new CartItemNotFoundError(itemId);
   }
 
-  const existingProduct = await ProductRepository.getProductById(
-    item.product_id
-  );
+  const productId = item.product_id;
+
+  const existingProduct = await ProductRepository.getProductById(productId);
 
   if (!existingProduct) {
-    throw new Error("Product not found");
-  }
-
-  if (quantity <= 0) {
-    throw new Error("Quantity must be greater than zero");
+    throw new ProductNotFoundError(productId);
   }
 
   if (existingProduct.quantity < quantity) {
-    throw new Error("Not enough product quantity in stock");
+    throw new NotEnoughStockError(productId);
   }
 
   return CartRepository.changeQuantity(userId, itemId, quantity);

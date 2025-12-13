@@ -1,9 +1,13 @@
 import { Prisma } from "@prisma/client";
+
 import { prisma } from "../../prisma";
-import { ProductUpdateType, ProductInputType } from "../types/ProductTypes";
+import {
+  CreateProductDTO,
+  UpdateProductDTO,
+} from "../validation/productSchema";
 
 export class ProductRepository {
-  static async createProduct(data: ProductInputType) {
+  static async createProduct(data: CreateProductDTO) {
     return prisma.products.create({
       data,
     });
@@ -19,7 +23,7 @@ export class ProductRepository {
     return prisma.products.findMany();
   }
 
-  static async updateProduct(productId: string, data: ProductUpdateType) {
+  static async updateProduct(productId: string, data: UpdateProductDTO) {
     return prisma.products.update({
       where: { id: productId },
       data,

@@ -13,14 +13,10 @@ export const addCartItemController = async (req: Request, res: Response) => {
   const { user } = req as AuthenticatedRequest;
 
   const userId = user.id;
-  const { productId, quantity } = req.body;
+  const data = req.body;
 
-  try {
-    const productItem = await addItem(userId, productId, quantity);
-    res.json(productItem);
-  } catch (e: any) {
-    res.status(400).json({ message: e.message }); // TODO make custom errors
-  }
+  const productItem = await addItem(userId, data);
+  res.json(productItem);
 };
 
 export const deleteCartItemController = async (req: Request, res: Response) => {
@@ -29,12 +25,8 @@ export const deleteCartItemController = async (req: Request, res: Response) => {
   const itemId = req.params.id;
   const userId = user.id;
 
-  try {
-    await deleteCartItem(userId, itemId);
-    res.json({ message: "Item removed" });
-  } catch (e: any) {
-    res.status(400).json({ message: e.message }); // TODO make custome errors
-  }
+  await deleteCartItem(userId, itemId);
+  res.json({ message: "Item removed" });
 };
 
 export const clearCartController = async (req: Request, res: Response) => {
@@ -59,13 +51,9 @@ export const updateCartItemController = async (req: Request, res: Response) => {
   const { user } = req as AuthenticatedRequest;
 
   const userId = user.id;
-  const { quantity } = req.body;
+  const data = req.body;
   const itemId = req.params.id;
 
-  try {
-    const cartItem = await updateCartItem(userId, itemId, quantity);
-    res.json(cartItem);
-  } catch (e: any) {
-    res.status(400).json({ message: e.message }); // TODO make custome errors
-  }
+  const cartItem = await updateCartItem(userId, itemId, data);
+  res.json(cartItem);
 };

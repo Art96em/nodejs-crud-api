@@ -5,12 +5,15 @@ import { OrderRepository } from "../repositories/orderRepository";
 import { ProductRepository } from "../repositories/productRepository";
 import { OrderItemsRepository } from "../repositories/orderItemsRepository";
 import { prisma } from "../../prisma";
+import { CartEmptyError } from "../errors/CartErrors";
+import { OrderNotFoundError } from "../errors/OrderErrors";
+import { NotEnoughStockError, ProductNotFoundError } from "../errors/ProductErrors";
 
 export const placeOrder = async (userId: number) => {
   const items = await CartRepository.getItems(userId);
 
   if (!items.length) {
-    throw new Error("Your cart is empty");
+    throw new CartEmptyError();
   }
 
   const products = await Promise.all(
@@ -19,7 +22,7 @@ export const placeOrder = async (userId: number) => {
 
   products.forEach((p) => {
     if (!p) {
-      throw new Error("Product not found");
+      throw new ProductNotFoundError();
     }
   });
 
@@ -46,9 +49,9 @@ export const placeOrder = async (userId: number) => {
 
       const product = await ProductRepository.getProductByIdTx(tx, productId);
 
-      if (!product) throw new Error("Product not found");
+      if (!product) throw new ProductNotFoundError();
       if (product.quantity < productQuantity)
-        throw new Error("Not enough stock");
+        throw new NotEnoughStockError(product.id);
 
       await ProductRepository.decreaseStockTx(tx, productId, productQuantity);
     }
@@ -75,7 +78,7 @@ export const updateOrderStatus = async (orderId: string, status: string) => {
   const order = await OrderRepository.getOrderById(orderId);
 
   if (!order) {
-    throw new Error("Order not found");
+    throw new OrderNotFoundError(orderId);
   }
 
   return OrderRepository.updateOrderStatus(orderId, status);
