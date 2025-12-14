@@ -5,7 +5,11 @@ import {
 } from "../src/errors/ProductErrors";
 import { CartRepository } from "../src/repositories/cartRepository";
 import { ProductRepository } from "../src/repositories/productRepository";
-import { updateCartItem, addItem } from "../src/services/cartService";
+import {
+  updateCartItem,
+  addItem,
+  deleteCartItem,
+} from "../src/services/cartService";
 
 jest.mock("../src/repositories/cartRepository");
 jest.mock("../src/repositories/productRepository");
@@ -59,6 +63,7 @@ describe("addItem — service", () => {
       cartItemId,
       5
     );
+    expect(CartRepository.putItem).toHaveBeenCalledTimes(0);
 
     expect(result.quantity).toBe(5);
   });
@@ -82,8 +87,36 @@ describe("addItem — service", () => {
     });
 
     expect(CartRepository.putItem).toHaveBeenCalledWith(1, productId, 2);
+    expect(CartRepository.changeQuantity).toHaveBeenCalledTimes(0);
 
     expect(result.quantity).toBe(2);
+  });
+});
+
+describe("deleteCartItem - service", () => {
+  it("CartItemNotFoundError", async () => {
+    (CartRepository.getItemByItemId as jest.Mock).mockResolvedValue(null);
+
+    await expect(deleteCartItem(1, cartItemId)).rejects.toBeInstanceOf(
+      CartItemNotFoundError
+    );
+
+    expect(CartRepository.removeItem).toHaveBeenCalledTimes(0);
+  });
+
+  it("Cart item removed", async () => {
+    (CartRepository.getItemByItemId as jest.Mock).mockResolvedValue({
+      id: cartItemId,
+    });
+    (CartRepository.removeItem as jest.Mock).mockResolvedValue({
+      count: 1,
+    });
+
+    const result = await deleteCartItem(1, cartItemId);
+
+    expect(CartRepository.removeItem).toHaveBeenCalledTimes(1);
+
+    expect(result.count).toBe(1);
   });
 });
 
