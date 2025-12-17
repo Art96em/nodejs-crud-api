@@ -1,13 +1,12 @@
 import request from "supertest";
 
-import { app } from "../src/app";
-import * as cartService from "../src/services/cartService";
-import { ProductNotFoundError } from "../src/errors/ProductErrors";
-import { CartItemNotFoundError } from "../src/errors/CartErrors";
+import { app } from "../../src/app";
+import * as cartService from "../../src/services/cartService";
+import { ProductNotFoundError } from "../../src/errors/ProductErrors";
+import { CartItemNotFoundError } from "../../src/errors/CartErrors";
 
-jest.mock("../src/services/cartService");
-
-jest.mock("../src/middlewares/auth", () => ({
+jest.mock("../../src/services/cartService");
+jest.mock("../../src/middlewares/auth", () => ({
   auth: (_req: any, _res: any, next: any) => {
     _req.user = { id: 1, role: "user" };
     next();
@@ -18,7 +17,7 @@ const productId = "ea5e0e84-839f-4d17-953d-3cdea5b68d23";
 const cartItemId = "8238469b-7b0f-46d1-bcff-af94411161d0";
 
 describe("POST /cart", () => {
-  it("Create cart item", async () => {
+  it("200", async () => {
     (cartService.addItem as jest.Mock).mockResolvedValue({
       id: cartItemId,
       user_id: 1,
@@ -40,14 +39,14 @@ describe("POST /cart", () => {
     });
   });
 
-  it("400 if payload is invalid", async () => {
+  it("400 - VALIDATION_ERROR (payload is invalid)", async () => {
     const res = await request(app).post("/cart").send({ productId });
 
     expect(res.status).toBe(400);
     expect(res.body.error.code).toBe("VALIDATION_ERROR");
   });
 
-  it("400 if quantity is negative", async () => {
+  it("400 - VALIDATION_ERROR (quantity is negative)", async () => {
     const res = await request(app).post("/cart").send({
       productId,
       quantity: -2,
@@ -60,7 +59,7 @@ describe("POST /cart", () => {
     );
   });
 
-  it("PRODUCT_NOT_FOUND error", async () => {
+  it("404 - PRODUCT_NOT_FOUND", async () => {
     (cartService.addItem as jest.Mock).mockRejectedValue(
       new ProductNotFoundError(productId)
     );
@@ -76,7 +75,7 @@ describe("POST /cart", () => {
 });
 
 describe("GET /cart", () => {
-  it("Success", async () => {
+  it("200", async () => {
     (cartService.getCartItems as jest.Mock).mockResolvedValue([
       {
         id: cartItemId,
@@ -104,8 +103,8 @@ describe("GET /cart", () => {
 });
 
 describe("DELETE /cart", () => {
-  it("Cleared", async () => {
-    (cartService.clearCart as jest.Mock).mockResolvedValue({});
+  it("200", async () => {
+    (cartService.clearCart as jest.Mock).mockResolvedValue({}); // TODO
 
     const res = await request(app).delete("/cart").send();
 
@@ -115,7 +114,7 @@ describe("DELETE /cart", () => {
 });
 
 describe("DELETE /cart", () => {
-  it("Success", async () => {
+  it("200", async () => {
     (cartService.deleteCartItem as jest.Mock).mockResolvedValue({});
 
     const res = await request(app).delete(`/cart/${cartItemId}`).send();
@@ -124,7 +123,7 @@ describe("DELETE /cart", () => {
     expect(res.body.message).toBe("Item removed");
   });
 
-  it("404 if item not found", async () => {
+  it("404 - CART_ITEM_NOT_FOUND", async () => {
     (cartService.deleteCartItem as jest.Mock).mockRejectedValue(
       new CartItemNotFoundError(cartItemId)
     );

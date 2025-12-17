@@ -2,19 +2,19 @@ import { Prisma } from "@prisma/client";
 
 import { prisma } from "../../prisma";
 import {
-  CreateProductDTO,
-  UpdateProductDTO,
+  CreateProductType,
+  UpdateProductType,
 } from "../validation/productSchema";
 
 export class ProductRepository {
-  static async createProduct(data: CreateProductDTO) {
+  static async createProduct(data: CreateProductType) {
     return prisma.products.create({
       data,
     });
   }
 
   static async deleteProduct(productId: string) {
-    return prisma.products.delete({
+    return prisma.products.deleteMany({
       where: { id: productId },
     });
   }
@@ -23,7 +23,7 @@ export class ProductRepository {
     return prisma.products.findMany();
   }
 
-  static async updateProduct(productId: string, data: UpdateProductDTO) {
+  static async updateProduct(productId: string, data: UpdateProductType) {
     return prisma.products.update({
       where: { id: productId },
       data,

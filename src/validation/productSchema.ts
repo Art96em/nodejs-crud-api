@@ -17,5 +17,5 @@ export const updateProductSchema = z
     message: "At least one field must be provided",
   });
 
-export type CreateProductDTO = z.infer<typeof createProductSchema>;
-export type UpdateProductDTO = z.infer<typeof updateProductSchema>;
+export type CreateProductType = z.infer<typeof createProductSchema>;
+export type UpdateProductType = z.infer<typeof updateProductSchema>;

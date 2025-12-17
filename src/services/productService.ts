@@ -1,32 +1,38 @@
+import { Prisma } from "@prisma/client";
+
 import { ProductNotFoundError } from "../errors/ProductErrors";
 import { ProductRepository } from "../repositories/productRepository";
 import {
-  CreateProductDTO,
-  UpdateProductDTO,
+  CreateProductType,
+  UpdateProductType,
 } from "../validation/productSchema";
 
-export const createProduct = (product: CreateProductDTO) => {
+export const createProduct = (product: CreateProductType) => {
   return ProductRepository.createProduct(product);
 };
 
-export const deleteProduct = (productId: string) => {
-  const existing = ProductRepository.getProductById(productId);
+export const deleteProduct = async (productId: string) => {
+  const { count } = await ProductRepository.deleteProduct(productId);
 
-  if (!existing) {
+  if (count === 0) {
     throw new ProductNotFoundError(productId);
   }
 
-  return ProductRepository.deleteProduct(productId);
+  return;
 };
 
-export const updateProduct = (productId: string, product: UpdateProductDTO) => {
-  const existing = ProductRepository.getProductById(productId);
-
-  if (!existing) {
-    throw new ProductNotFoundError(productId);
+export const updateProduct = async (
+  productId: string,
+  product: UpdateProductType
+) => {
+  try {
+    return await ProductRepository.updateProduct(productId, product);
+  } catch (e: any) {
+    if (e?.code === "P2025") {
+      throw new ProductNotFoundError(productId);
+    }
+    throw e;
   }
-
-  return ProductRepository.updateProduct(productId, product);
 };
 
 export const getProducts = () => {

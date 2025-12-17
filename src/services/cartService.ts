@@ -1,3 +1,4 @@
+import { prisma } from "../../prisma";
 import { CartItemNotFoundError } from "../errors/CartErrors";
 import {
   NotEnoughStockError,
@@ -35,13 +36,13 @@ export const addItem = async (
 };
 
 export const deleteCartItem = async (userId: number, itemId: string) => {
-  const item = await CartRepository.getItemByItemId(userId, itemId);
+  const item = await CartRepository.removeItem(userId, itemId);
 
-  if (!item) {
+  if (item.count === 0) {
     throw new CartItemNotFoundError(itemId);
   }
 
-  return CartRepository.removeItem(userId, itemId);
+  return;
 };
 
 export const clearCart = (userId: number) => {
@@ -57,23 +58,26 @@ export const updateCartItem = async (
   itemId: string,
   { quantity }: UpdateCartItemDto
 ) => {
-  const item = await CartRepository.getItemByItemId(userId, itemId);
+  return prisma.$transaction(async (tx) => {
+    const item = await CartRepository.getItemByItemIdTx(tx, userId, itemId);
 
-  if (!item) {
-    throw new CartItemNotFoundError(itemId);
-  }
+    if (!item) {
+      throw new CartItemNotFoundError(itemId);
+    }
 
-  const productId = item.product_id;
+    const product = await ProductRepository.getProductByIdTx(
+      tx,
+      item.product_id
+    );
 
-  const existingProduct = await ProductRepository.getProductById(productId);
+    if (!product) {
+      throw new ProductNotFoundError(item.product_id);
+    }
 
-  if (!existingProduct) {
-    throw new ProductNotFoundError(productId);
-  }
+    if (product.quantity < quantity) {
+      throw new NotEnoughStockError(product.id);
+    }
 
-  if (existingProduct.quantity < quantity) {
-    throw new NotEnoughStockError(productId);
-  }
-
-  return CartRepository.changeQuantity(userId, itemId, quantity);
+    return CartRepository.changeQuantityTx(tx, userId, itemId, quantity);
+  });
 };

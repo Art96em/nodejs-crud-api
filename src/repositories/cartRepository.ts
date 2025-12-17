@@ -38,6 +38,16 @@ export class CartRepository {
     });
   }
 
+  static async getItemByItemIdTx(
+    tx: Prisma.TransactionClient,
+    userId: number,
+    itemId: string
+  ) {
+    return tx.cart_items.findFirst({
+      where: { user_id: userId, id: itemId },
+    });
+  }
+
   static async getItemByProductId(userId: number, productId: string) {
     return prisma.cart_items.findFirst({
       where: { user_id: userId, product_id: productId },
@@ -50,6 +60,18 @@ export class CartRepository {
     quantity: number
   ) {
     return prisma.cart_items.update({
+      where: { id: itemId, user_id: userId },
+      data: { quantity },
+    });
+  }
+
+  static async changeQuantityTx(
+    tx: Prisma.TransactionClient,
+    userId: number,
+    itemId: string,
+    quantity: number
+  ) {
+    return tx.cart_items.update({
       where: { id: itemId, user_id: userId },
       data: { quantity },
     });
